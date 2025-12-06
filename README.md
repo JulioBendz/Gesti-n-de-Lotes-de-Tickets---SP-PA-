@@ -39,20 +39,22 @@ Se registre auditoría cuando corresponda.
 En la operación general del sistema, funciona como el núcleo de gestión de movimientos y lotes de producción.
 
 4. Parámetros Principales
-Parámetro	Descripción
-@ACCION	I (Insert), U (Update), D (Delete).
-@CATEGORIA_MOVIM_DESTINO	Define tipo de movimiento; determina validaciones.
-@COD_OPERACION_COSTURA	Operación productiva asociada al lote.
-@COD_PROVEEDOR_DESTINO	Identificador del proveedor.
-@COD_FAMITEM_DESTINO	Familia o categoría del ítem.
-@COD_SEC_COSTURA_DESTINO	Sector de costura.
-@COD_LINEA_COSTURA_DESTINO	Línea de producción.
-@COD_CENCOS_DESTINO	Centro de costos.
-@ORDEN_COMPRA_DESTINO	Orden de compra asociada.
-@ORDEN_PRODUCCION_DESTINO	Orden de producción asociada.
-@FECHA_DOCUMENTO	Fecha del lote/documento.
-@USUARIO	Usuario ejecutor de la operación.
-@NUM_LOTE_DESDE / @NUM_LOTE	Número o rango de lote.
+| Parámetro                       | Descripción                                        |
+| ------------------------------- | -------------------------------------------------- |
+| **@ACCION**                     | I (Insert), U (Update), D (Delete).                |
+| **@CATEGORIA_MOVIM_DESTINO**    | Define tipo de movimiento; determina validaciones. |
+| **@COD_OPERACION_COSTURA**      | Operación productiva asociada al lote.             |
+| **@COD_PROVEEDOR_DESTINO**      | Identificador del proveedor.                       |
+| **@COD_FAMITEM_DESTINO**        | Familia o categoría del ítem.                      |
+| **@COD_SEC_COSTURA_DESTINO**    | Sector de costura.                                 |
+| **@COD_LINEA_COSTURA_DESTINO**  | Línea de producción.                               |
+| **@COD_CENCOS_DESTINO**         | Centro de costos.                                  |
+| **@ORDEN_COMPRA_DESTINO**       | Orden de compra asociada.                          |
+| **@ORDEN_PRODUCCION_DESTINO**   | Orden de producción asociada.                      |
+| **@FECHA_DOCUMENTO**            | Fecha del lote/documento.                          |
+| **@USUARIO**                    | Usuario ejecutor de la operación.                  |
+| **@NUM_LOTE_DESDE / @NUM_LOTE** | Número o rango de lote.                            |
+
 5. Tablas Principales Involucradas
 
 CF_LOTETICKET (tabla principal del lote)
