@@ -394,6 +394,8 @@ flowchart TB
 Descargar PNG:
 [Descargar Flujo General PNG](./diagrams/Flujo%20General%20del%20Stored%20Procedure%20UP_MAN_CF_LOTETICKET%20(I,%20U,%20D)%20y%20Validaciones%20de%20Destino.png)
 
+<img src="https://img.shields.io/badge/Descargar-Flujo%20General%20PNG-blue?style=flat-square" alt="Descargar Diagrama General"> Flujo%20General%20del%20Stored%20Procedure%20UP_MAN_CF_LOTETICKET%20(I,%20U,%20D)%20y%20Validaciones%20de%20Destino.png)
+
 ### Validaciones Específicas del Lote Destino (Categoría 3)
 
 Diagrama que detalla las validaciones específicas realizadas cuando la categoría de movimiento destino es `3`, asegurando la consistencia y validez de los datos antes de realizar la inserción o actualización del lote:
@@ -442,9 +444,11 @@ flowchart TD
     L1 --> Z
     L -- Si --> C
 
-    style Z fill:#F4A9A8,stroke:#D32F2F
-    style C fill:#BDECB6,stroke:#3C8039
-    style A fill:#FFE0B2,stroke:#FF9800
+    style Z fill:#F4A9A8,stroke:#D32F2F,color:#fff
+    style C fill:#BDECB6,stroke:#3C8039,color:#000
+    style A fill:#FFE0B2,stroke:#FF9800,color:#000
 ```
 Descargar PNG:
 [Descargar Categoría 3 PNG](./diagrams/Detalle%20del%20Flujo%20de%20Validación%20para%20Categoría%20de%20Movimiento%20Destino%20'3'%20(Lote%20Destino).png)
+
+<img src="https://img.shields.io/badge/Descargar-Categoría%203%20PNG-blue?style=flat-square" alt="Descargar Diagrama Categoría 3"> ./diagrams/Detalle%20del%20Flujo%20de%20Validación%20para%20Categoría%20de%20Movimiento%20Destino%20'3'%20(Lote%20Destino).png)
