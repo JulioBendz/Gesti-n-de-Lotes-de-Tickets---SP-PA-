@@ -14,6 +14,7 @@ Este documento resume el análisis técnico-funcional del Stored Procedure `UP_M
 - [Tablas Involucradas](#tablas-involucradas)
 - [Reglas de Negocio](#reglas-de-negocio)
 - [Flujo General por Acción](#flujo-general-por-acción)
+- [Pseudocódigo Detallado](#pseudocódigo-detallado)
 - [Manejo de Errores y Transacciones](#manejo-de-errores-y-transacciones)
 - [Mejoras Técnicas](#mejoras-técnicas)
 - [Recomendaciones de Integración con .NET](#recomendaciones-de-integración-con-net)
@@ -37,23 +38,28 @@ El Stored Procedure asegura que:
 
 ## Parámetros Principales
 
-| Parámetro                        | Descripción                                                  |
-|----------------------------------|--------------------------------------------------------------|
-| `@ACCION`                        | `I` (Insert), `U` (Update), `D` (Delete).                    |
-| `@CATEGORIA_MOVIM_DESTINO`       | Define tipo de movimiento; determina validaciones.          |
-| `@COD_OPERACION_COSTURA`         | Código de operación productiva asociada al lote.            |
-| `@COD_PROVEEDOR_DESTINO`         | Identificador del proveedor.                                |
-| `@COD_FAMITEM_DESTINO`           | Familia o categoría del ítem.                               |
-| `@COD_SEC_COSTURA_DESTINO`       | Sector de costura.                                          |
-| `@COD_LINEA_COSTURA_DESTINO`     | Línea de producción.                                        |
-| `@COD_CENCOS_DESTINO`            | Centro de costos.                                           |
-| `@ORDEN_COMPRA_DESTINO`          | Orden de compra asociada.                                   |
-| `@ORDEN_PRODUCCION_DESTINO`      | Orden de producción asociada.                               |
-| `@FECHA_DOCUMENTO`               | Fecha del lote/documento.                                   |
-| `@USUARIO`                       | Usuario ejecutor de la operación.                           |
-| `@NUM_LOTE_DESDE / @NUM_LOTE`    | Número o rango de lote.                                     |
+| Parámetro | Tipo de Dato | Longitud | Obligatorio | Descripción |
+|-----------|--------------|----------|------------|------------|
+| `@ACCION` | `CHAR` | 1 | Sí | `I` (Insert), `U` (Update), `D` (Delete). |
+| `@FEC_LOTETICKET` | `DATETIME` | - | Sí | Fecha del lote/documento. |
+| `@NUM_LOTE` | `INT` | - | No | Número de lote (generado automáticamente en INSERT). |
+| `@COD_OPERACION_COSTURA` | `CHAR` | 6 | Sí | Código de operación productiva asociada al lote. |
+| `@COD_USUARIO` | `VARCHAR` | 50 | Sí | Usuario ejecutor de la operación (referencia a tabla de seguridad). |
+| `@PC` | `VARCHAR` | 20 | No | Nombre de la máquina/PC desde donde se ejecuta. |
+| `@CATEGORIA_MOVIM_DESTINO` | `CHAR` | 1 | No | Define tipo de movimiento (1, 2, 3, 4, 7). Valor por defecto: `'1'`. |
+| `@COD_TIPMOV_DESTINO` | `VARCHAR` | 10 | No | Código tipo de movimiento (validado si operación es '999999'). |
+| `@COD_SECTOR_DESTINO` | `CHAR` | 2 | No | Sector de costura (requerido para categoría 2 o 4). |
+| `@COD_LINPRO_DESTINO` | `CHAR` | 3 | No | Línea de producción (validado para categoría 2 o 4). |
+| `@COD_PROVEEDOR_DESTINO` | `VARCHAR` | 10 | No | Identificador del proveedor (requerido para categoría 3). |
+| `@COD_FAMITEM_DESTINO` | `VARCHAR` | 10 | No | Familia o categoría del ítem (requerido para categoría 3). |
+| `@NUM_LOTE_DESTINO` | `INT` | - | No | Número de lote destino (opcional, validado si > 0 en categoría 3). |
+| `@COD_CENCOST_DESTINO` | `VARCHAR` | 10 | No | Centro de costos (validado para categoría 7). |
+| `@TIP_PTMP_DESTINO_ASOCIADO` | `CHAR` | 2 | No | Tipo de parámetro destino asociado. |
+| `@SER_ORDCOMP_DESTINO` | `VARCHAR` | 3 | No | Serie de orden de compra destino. |
+| `@COD_ORDCOMP_DESTINO` | `VARCHAR` | 10 | No | Código de orden de compra destino. |
+| `@COD_ORDPRO_DESTINO` | `VARCHAR` | 10 | No | Código de orden de producción (requerido para categoría 3). |
 
-> Nota: Documentar tipos de datos y longitudes en la especificación técnica del procedimiento (si no está ya).
+> **Nota:** Los parámetros marcados como "No obligatorio" pueden tener valores por defecto `''` (cadena vacía) o `0` (número). Su validación depende de la `@CATEGORIA_MOVIM_DESTINO` y `@ACCION` ejecutada.
 
 ## Tablas Principales Involucradas
 - `CF_LOTETICKET` — Tabla principal del lote.
@@ -96,6 +102,176 @@ El Stored Procedure asegura que:
 - Rechazar si existen tickets asociados.
 - Eliminar el lote (o marcar como inactivo según política).
 - Registrar auditoría de eliminación (si aplica).
+
+## Pseudocódigo Detallado
+
+A continuación se presenta el pseudocódigo estructurado del procedimiento `UP_MAN_CF_LOTETICKET`, que detalla la lógica de validación y ejecución:
+
+```sql
+PROCEDIMIENTO UP_MAN_CF_LOTETICKET (
+    // Parámetros de Acción y Lote
+    @ACCION CHAR(1),
+    @FEC_LOTETICKET DATETIME,
+    @NUM_LOTE INT,
+    @COD_OPERACION_COSTURA CHAR(6),
+    @COD_USUARIO COD_USUARIO,
+    @PC VARCHAR(20),
+    
+    // Parámetros de Destino
+    @CATEGORIA_MOVIM_DESTINO CHAR(1) = '1',
+    @COD_TIPMOV_DESTINO COD_TIPMOV = '',
+    @COD_SECTOR_DESTINO CHAR(2) = '',
+    @COD_LINPRO_DESTINO CHAR(3) = '',
+    @COD_PROVEEDOR_DESTINO COD_PROVEEDOR = '',
+    @COD_FAMITEM_DESTINO COD_FAMITEM = '',
+    @NUM_LOTE_DESTINO INT = 0,
+    @COD_CENCOST_DESTINO COD_CENCOST = '',
+    @TIP_PTMP_DESTINO_ASOCIADO CHAR(2) = '',
+    @SER_ORDCOMP_DESTINO SER_ORDCOMP = '',
+    @COD_ORDCOMP_DESTINO COD_ORDCOMP = '',
+    @COD_ORDPRO_DESTINO COD_ORDPRO = ''
+)
+INICIO
+
+    // 1. Configuración Inicial y Declaración
+    SET NOCOUNT ON
+    SET XACT_ABORT ON
+    
+    DECLARAR @NUM_ACTUALIZACION_GENERAL, @COUNT, @COD_FAMITEM_LOTE, @COD_PROVEEDOR_LOTE
+    SET @COUNT = 0
+
+    // 2. Validaciones de Destino (Solo para Inserción 'I' o Actualización 'U')
+    SI @ACCION es 'I' o 'U' ENTONCES
+        
+        // 2.1 Validación de Tipo de Movimiento (Operación de Costura '999999')
+        SI @COD_OPERACION_COSTURA es '999999' ENTONCES
+            SI NO EXISTE @COD_TIPMOV_DESTINO en LG_TIPOSMOV ENTONCES
+                RAISERROR ('TIPOS DE MOVIMIENTO NO EXISTE. REVISAR')
+                RETORNAR
+            FIN SI
+        FIN SI
+
+        // 2.2 Validación por Categoría de Movimiento Destino
+        
+        // Categoría '2' o '4': Línea de Producción
+        SI @CATEGORIA_MOVIM_DESTINO es '2' o '4' ENTONCES
+            SI @COD_LINPRO_DESTINO <> '' ENTONCES
+                SI NO EXISTE @COD_LINPRO_DESTINO y @COD_SECTOR_DESTINO en CF_LINEAS_PRODUCCION ENTONCES
+                    RAISERROR ('LA LINEA DE PRODUCCION DESTINO NO EXISTE')
+                    RETORNAR
+                FIN SI
+            FIN SI
+        FIN SI
+
+        // Categoría '3': Lote, Proveedor y Orden de Producción (Validación Compleja)
+        SI @CATEGORIA_MOVIM_DESTINO es '3' ENTONCES
+            // a. Validar Lote Destino
+            SI @NUM_LOTE_DESTINO > 0 Y NO EXISTE @NUM_LOTE_DESTINO en CF_LOTE ENTONCES
+                RAISERROR ('LOTE NO EXISTE. REVISAR') ; RETORNAR
+            FIN SI
+
+            // b. Validar Proveedor Destino
+            SI @COD_PROVEEDOR_DESTINO no es NULO o vacío Y NO EXISTE en LG_PROVEEDOR ENTONCES
+                RAISERROR ('PROVEEDOR DESTINO NO EXISTE. REVISAR') ; RETORNAR
+            FIN SI
+
+            // c. Validar Familia de Ítem
+            SI NO EXISTE @COD_FAMITEM_DESTINO en LG_FAMITE ENTONCES
+                RAISERROR ('FAMILIA ORIGEN NO EXISTE. REVISAR') ; RETORNAR
+            FIN SI
+
+            // d. Comparar atributos del Lote con Destino
+            OBTENER @COD_FAMITEM_LOTE y @COD_PROVEEDOR_LOTE de CF_LOTE para @NUM_LOTE_DESTINO
+            SI @COD_FAMITEM_LOTE <> @COD_FAMITEM_DESTINO ENTONCES
+                RAISERROR ('FAMILIA DISTINTA AL LOTE') ; RETORNAR
+            FIN SI
+            SI @COD_PROVEEDOR_LOTE <> @COD_PROVEEDOR_DESTINO ENTONCES
+                RAISERROR ('PROVEEDOR DISTINTO AL LOTE') ; RETORNAR
+            FIN SI
+            
+            // e. Validar Orden de Producción (O/P)
+            SI NO EXISTE @COD_ORDPRO_DESTINO en ES_OrdPro ENTONCES
+                RAISERROR ('O/P NO EXISTE') ; RETORNAR
+            FIN SI
+            SI O/P EXISTE y fec_liquidacion NO es NULO ENTONCES
+                RAISERROR ('O/P LIQUIDADA') ; RETORNAR
+            FIN SI
+            SI O/P EXISTE y fec_cancelacion NO es NULO ENTONCES
+                RAISERROR ('O/P CANCELADA') ; RETORNAR
+            FIN SI
+            
+            // f. Validar Orden de Compra (O/C) Requerida Asociada
+            SI NO EXISTE O/C LIGADA a O/P, Proveedor y FamItem con Cod_StaOrdComp = 'L' ENTONCES
+                RAISERROR ('ORDEN DE COMPRA INEXISTENTE .REVISAR') ; RETORNAR
+            FIN SI
+        FIN SI
+
+        // Categoría '7': Centro de Costos
+        SI @CATEGORIA_MOVIM_DESTINO es '7' ENTONCES
+            SI @COD_CENCOST_DESTINO <> '' Y NO EXISTE @COD_CENCOST_DESTINO en TG_CENCOSTO ENTONCES
+                RAISERROR ('CENTRO DE COSTOS DESTINO NO EXISTE. REVISAR') ; RETORNAR
+            FIN SI
+        FIN SI
+        
+    FIN SI
+
+    // 3. Bloque de Transacción y Ejecución de Acciones
+    BEGIN TRANSACTION
+
+    // ACCIÓN 'I' (INSERTAR)
+    SI @ACCION es 'I' ENTONCES
+        // 3.1. Validación de Seguridad para Inserción
+        SI NO EXISTE @COD_USUARIO y @COD_OPERACION_COSTURA en CF_SEGURIDAD_LECTURA_TICKETS_LOTE ENTONCES
+            ROLLBACK ; RAISERROR ('USUARIO NO PUEDE CREAR LOTES') ; RETORNAR
+        FIN SI
+
+        // 3.2. Obtener Nueva Numeración
+        ACTUALIZAR NUM_ACTUALIZACION_GENERAL en CF_CONTROL
+        SET @NUM_LOTE = MAX(NUM_LOTE) de CF_LOTETICKET para @FEC_LOTETICKET
+        SET @NUM_LOTE = ISNULL(@NUM_LOTE, 0) + 1
+
+        // 3.3. Inserciones
+        INSERTAR en CF_LOTETICKET (con todos los parámetros)
+        INSERTAR en CF_LECTURA_TICKETS (para auditoría)
+        
+        // 3.4. Retornar Lote Creado
+        SELECCIONAR @FEC_LOTETICKET, @NUM_LOTE
+
+    // ACCIÓN 'U' (ACTUALIZAR)
+    SINO SI @ACCION es 'U' ENTONCES
+        // 3.5. Validar Lote sin Tickets Asociados
+        OBTENER @COUNT de tickets en CF_ORDPRO_TICKET para el lote actual
+        SI @COUNT > 0 ENTONCES
+            ROLLBACK ; RAISERROR ('LOTE TIENE TICKETS ASOCIADOS. ELIMINE PRIMERO LOS TICKETS') ; RETORNAR
+        FIN SI
+        
+        // 3.6. Actualizar
+        ACTUALIZAR CF_LOTETICKET SET (TODOS LOS CAMPOS DE DESTINO)
+        DONDE FEC_LOTETICKET = @FEC_LOTETICKET y NUM_LOTE = @NUM_LOTE
+
+    // ACCIÓN 'D' (ELIMINAR)
+    SINO SI @ACCION es 'D' ENTONCES
+        // 3.7. Validar Lote sin Tickets Asociados
+        OBTENER @COUNT de tickets en CF_ORDPRO_TICKET para el lote actual
+        SI @COUNT > 0 ENTONCES
+            ROLLBACK ; RAISERROR ('LOTE TIENE TICKETS ASOCIADOS. ELIMINE PRIMERO LOS TICKETS') ; RETORNAR
+        FIN SI
+
+        // 3.8. Eliminar
+        ELIMINAR de CF_LOTETICKET
+        DONDE FEC_LOTETICKET = @FEC_LOTETICKET y NUM_LOTE = @NUM_LOTE
+    FIN SI
+
+    // 4. Cierre de Transacción
+    COMMIT TRANSACTION
+
+FIN PROCEDIMIENTO
+```
+> Notas sobre el pseudocódigo
+- Configuración inicial: SET NOCOUNT ON y SET XACT_ABORT ON optimizan el rendimiento y controlan comportamiento transaccional.
+- Validaciones previas: Se ejecutan solo para acciones de inserción (I) y actualización (U).
+- Control de transacciones: Usa BEGIN TRANSACTION, ROLLBACK y COMMIT para garantizar consistencia.
+- Manejo de errores: Cada validación fallida genera un RAISERROR descriptivo que detiene la ejecución.
 
 ## Manejo de Errores y Transacciones
 - Inicio con `BEGIN TRAN`.
