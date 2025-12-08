@@ -268,10 +268,10 @@ INICIO
 FIN PROCEDIMIENTO
 ```
 > Notas sobre el pseudocódigo
-- Configuración inicial: SET NOCOUNT ON y SET XACT_ABORT ON optimizan el rendimiento y controlan comportamiento transaccional.
-- Validaciones previas: Se ejecutan solo para acciones de inserción (I) y actualización (U).
-- Control de transacciones: Usa BEGIN TRANSACTION, ROLLBACK y COMMIT para garantizar consistencia.
-- Manejo de errores: Cada validación fallida genera un RAISERROR descriptivo que detiene la ejecución.
+- **Configuración inicial:** `SET NOCOUNT ON` (elimina mensajes de filas afectadas) y `SET XACT_ABORT ON` (detiene ejecución ante errores) optimizan rendimiento y controlan comportamiento transaccional.
+- **Validaciones previas:** Se ejecutan solo para acciones de inserción (`I`) y actualización (`U`); la acción delete (`D`) solo verifica tickets asociados.
+- **Control de transacciones:** Usa `BEGIN TRANSACTION`, `ROLLBACK` y `COMMIT` para garantizar que todas las operaciones se ejecuten como una unidad atómica.
+- **Manejo de errores:** Cada validación fallida genera un `RAISERROR` descriptivo que detiene la ejecución e inicia automáticamente `ROLLBACK`.
 
 ## Manejo de Errores y Transacciones
 - Inicio con `BEGIN TRAN`.
