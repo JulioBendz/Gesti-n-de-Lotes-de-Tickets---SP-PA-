@@ -65,8 +65,8 @@ El Stored Procedure asegura que:
 ## Tablas Principales Involucradas
 - `CF_LOTETICKET` — Tabla principal del lote.
 - `CF_LECTURA_TICKETS` — Auditoría de lecturas/tickets.
-- `PROVEEDOR`, `ITEM_FAMILIA`, `OPCAB`, `OCPEDCAB` — Tablas maestras y de órdenes.
-- Tablas relacionadas a `SECTORES`, `LINEAS`, `CENTROS_DE_COSTO`.
+- `PROVEEDOR` (`LG_PROVEEDOR`), `ITEM_FAMILIA` (`LG_FAMITE`), `OPCAB` (`ES_OrdPro`), `OCPEDCAB` (`Lg_OrdComp`) — Tablas maestras y de órdenes.
+- Tablas relacionadas a `SECTORES` / `LINEAS` (`CF_LINEAS_PRODUCCION`), `CENTROS_DE_COSTO` (`TG_CENCOSTO`) y `TIPOS DE MOVIMIENTO` (`LG_TIPOSMOV`).
 
 ## Reglas de Negocio
 
