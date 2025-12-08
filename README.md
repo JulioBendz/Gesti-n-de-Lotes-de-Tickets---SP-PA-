@@ -19,6 +19,7 @@ Este documento resume el análisis técnico-funcional del Stored Procedure `UP_M
 - [Mejoras Técnicas](#mejoras-técnicas)
 - [Recomendaciones de Integración con .NET](#recomendaciones-de-integración-con-net)
 - [Conclusión](#conclusión)
+- [Diagramas de Flujo](#diagramas-de-flujo)
 
 ## Resumen Ejecutivo
 `UP_MAN_CF_LOTETICKET` gestiona la creación, actualización y eliminación de lotes de tickets dentro de un flujo productivo industrial (costura, proveedores, familias de ítems, órdenes de compra y producción). Soporta las acciones:
