@@ -312,9 +312,9 @@ FIN PROCEDIMIENTO
 
 Diagrama que representa toda la lógica principal del procedimiento, incluyendo validaciones de destino y las tres acciones posibles (Insert, Update, Delete):
 
+**Diagrama Interactivo:**
+
 ```mermaid
-config:
-  layout: dagre
 flowchart TB
     A["Inicio SP UP_MAN_CF_LOTETICKET"] --> B{"SET NOCOUNT ON<br>SET XACT_ABORT ON"}
     B --> C{"Declarar Variables"}
@@ -391,6 +391,8 @@ flowchart TB
     style R fill:#A1C4FD,stroke:#4A90E2
     style T fill:#BDECB6,stroke:#3C8039
 ```
+Descargar PNG:
+<img src="https://img.shields.io/badge/Descargar-Flujo General PNG-blue?style=flat-square" alt="Descargar Diagrama General">
 
 ### Validaciones Específicas del Lote Destino (Categoría 3)
 
@@ -444,3 +446,5 @@ flowchart TD
     style C fill:#BDECB6,stroke:#3C8039
     style A fill:#FFE0B2,stroke:#FF9800
 ```
+Descargar PNG:
+<img src="https://img.shields.io/badge/Descargar-Categoría 3 PNG-blue?style=flat-square" alt="Descargar Diagrama Categoría 3">
