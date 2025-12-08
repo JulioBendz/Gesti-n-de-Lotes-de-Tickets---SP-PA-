@@ -393,3 +393,56 @@ flowchart TB
     style R fill:#A1C4FD,stroke:#4A90E2
     style T fill:#BDECB6,stroke:#3C8039
 ```
+
+### Validaciones Específicas del Lote Destino (Categoría 3)
+
+Diagrama que detalla las validaciones específicas realizadas cuando la categoría de movimiento destino es `3`, asegurando la consistencia y validez de los datos antes de realizar la inserción o actualización del lote:
+
+```mermaid
+flowchart TD
+    A["Inicio Validacion Lote Destino"] --> B{NUM_LOTE_DESTINO > 0}
+    B -- No --> C["Validacion Lote OK - Continua"]
+    B -- Si --> B1{Existe Lote en CF_LOTE}
+    B1 -- No --> B2["RAISERROR<br>LOTE NO EXISTE"]
+    B2 --> Z["RETURN"]
+    B1 -- Si --> D{COD_PROVEEDOR_DESTINO <> ''}
+    
+    D -- Si --> D1{Existe Proveedor<br>en LG_PROVEEDOR}
+    D1 -- No --> D2["RAISERROR<br>PROVEEDOR NO EXISTE"]
+    D2 --> Z
+    D1 -- Si --> E{Existe Familia Item<br>en LG_FAMITE}
+    D -- No --> E
+
+    E -- No --> E1["RAISERROR<br>FAMILIA NO EXISTE"]
+    E1 --> Z
+    E -- Si --> F["Obtener FamItem y Proveedor<br>del LOTE"]
+
+    F --> G{FamItem Lote<br>diferente a Destino}
+    G -- Si --> G1["RAISERROR<br>FAMILIA DISTINTA"]
+    G1 --> Z
+    G -- No --> H{Proveedor Lote<br>diferente a Destino}
+
+    H -- Si --> H1["RAISERROR<br>PROVEEDOR DISTINTO"]
+    H1 --> Z
+    H -- No --> I{O/P Existe<br>en ES_OrdPro}
+
+    I -- No --> I1["RAISERROR<br>O/P NO EXISTE"]
+    I1 --> Z
+    I -- Si --> J{O/P No Liquidada<br>fec_liquidacion IS NULL}
+
+    J -- No --> J1["RAISERROR<br>O/P LIQUIDADA"]
+    J1 --> Z
+    J -- Si --> K{O/P No Cancelada<br>fec_cancelacion IS NULL}
+
+    K -- No --> K1["RAISERROR<br>O/P CANCELADA"]
+    K1 --> Z
+    K -- Si --> L{Existe O/C Requerida<br>Cod_StaOrdComp = L}
+
+    L -- No --> L1["RAISERROR<br>ORDEN DE COMPRA INEXISTENTE"]
+    L1 --> Z
+    L -- Si --> C
+
+    style Z fill:#F4A9A8,stroke:#D32F2F
+    style C fill:#BDECB6,stroke:#3C8039
+    style A fill:#FFE0B2,stroke:#FF9800
+```
