@@ -304,3 +304,92 @@ FIN PROCEDIMIENTO
 ## Contacto / Autor
 - **Autor:** Julio Albert Bendezú Gutiérrez  
 - **Fecha del documento:** 2025-12-05
+
+## Diagramas de Flujo
+
+### Flujo General del Stored Procedure UP_MAN_CF_LOTETICKET (I, U, D) y Validaciones de Destino
+
+Diagrama que representa toda la lógica principal del procedimiento, incluyendo validaciones de destino y las tres acciones posibles (Insert, Update, Delete):
+
+```mermaid
+config:
+  layout: dagre
+flowchart TB
+    A["Inicio SP UP_MAN_CF_LOTETICKET"] --> B{"SET NOCOUNT ON<br>SET XACT_ABORT ON"}
+    B --> C{"Declarar Variables"}
+    C --> D{"Inicializar COUNT = 0"}
+    D --> E{"ACCION es I o U"}
+    E -- Si --> F{"Validaciones de Destino"}
+    E -- No --> N{"Ejecucion de Accion<br>BEGIN TRANSACTION"}
+    F --> G{"COD_OPERACION_COSTURA = 999999"}
+    G -- Si --> G1{"Existe COD_TIPMOV_DESTINO<br>en LG_TIPOSMOV"}
+    G1 -- No --> G2["RAISERROR<br>TIPOS DE MOVIMIENTO NO EXISTE"]
+    G1 -- Si --> H{"Validacion de Categoria de Movimiento Destino"}
+    G2 --> Z["RETURN"]
+    G -- No --> H
+    H --> I{"CATEGORIA_MOVIM_DESTINO = 2"}
+    I -- Si --> I1@{ label: "COD_LINPRO_DESTINO <> ''" }
+    I1 -- Si --> I2{"Existe LINPRO y SECTOR<br>en CF_LINEAS_PRODUCCION"}
+    I2 -- No --> I3["RAISERROR<br>LINEA DE PRODUCCION DESTINO NO EXISTE"]
+    I3 --> Z
+    I2 -- Si --> J{"..."}
+    I1 -- No --> J
+    I -- No --> J
+    J --> K{"CATEGORIA_MOVIM_DESTINO = 3"}
+    K -- Si --> K1{"Validaciones Lote/Prov/Fam/O.P. Destino"}
+    K1 -- Validacion OK --> L{"..."}
+    K1 -- Validacion Falla --> K2["RAISERROR<br>LOTE NO EXISTE, etc."]
+    K2 --> Z
+    K -- No --> L
+    L --> M{"CATEGORIA_MOVIM_DESTINO = 4"}
+    M -- Si --> M1@{ label: "COD_LINPRO_DESTINO <> ''" }
+    M1 -- Si --> M2{"Existe LINPRO y SECTOR<br>en CF_LINEAS_PRODUCCION"}
+    M2 -- No --> M3["RAISERROR<br>LINEA DE PRODUCCION DESTINO NO EXISTE"]
+    M3 --> Z
+    M2 -- Si --> M4{"..."}
+    M1 -- No --> M4
+    M -- No --> M4
+    M4 --> M5{"CATEGORIA_MOVIM_DESTINO = 7"}
+    M5 -- Si --> M6@{ label: "COD_CENCOST_DESTINO <> ''" }
+    M6 -- Si --> M7{"Existe CENCOSTO<br>en TG_CENCOSTO"}
+    M7 -- No --> M8["RAISERROR<br>CENTRO DE COSTOS DESTINO NO EXISTE"]
+    M8 --> Z
+    M7 -- Si --> N
+    M6 -- No --> N
+    M5 -- No --> N
+    N --> P{"ACCION = I"}
+    P -- Si --> P1{"Validacion de Seguridad"}
+    P1 -- Falla --> P2["ROLLBACK<br>RAISERROR USUARIO NO PUEDE CREAR LOTES"]
+    P2 --> Z
+    P1 -- OK --> P3["UPDATE NUM_ACTUALIZACION_GENERAL"]
+    P3 --> P4["Calcular NUM_LOTE"]
+    P4 --> P5["INSERT CF_LOTETICKET"]
+    P5 --> P6["INSERT CF_LECTURA_TICKETS"]
+    P6 --> P7["SELECT LOTE Y FECHA"]
+    P7 --> R["COMMIT TRANSACTION"]
+    P -- No --> Q{"ACCION = U"}
+    Q -- Si --> Q1{"Contar tickets asociados"}
+    Q1 --> Q2{"COUNT > 0"}
+    Q2 -- Si --> Q3["ROLLBACK<br>RAISERROR LOTE TIENE TICKETS ASOCIADOS"]
+    Q3 --> Z
+    Q2 -- No --> Q4["UPDATE CF_LOTETICKET"]
+    Q4 --> R
+    Q -- No --> S{"ACCION = D"}
+    S -- Si --> S1{"Contar tickets asociados"}
+    S1 --> S2{"COUNT > 0"}
+    S2 -- Si --> S3["ROLLBACK<br>RAISERROR LOTE TIENE TICKETS ASOCIADOS"]
+    S3 --> Z
+    S2 -- No --> S4["DELETE CF_LOTETICKET"]
+    S4 --> R
+    S -- No --> R
+    R --> T["Fin SP"]
+
+    I1@{ shape: diamond}
+    M1@{ shape: diamond}
+    M6@{ shape: diamond}
+    style A fill:#BDECB6,stroke:#3C8039
+    style N fill:#FFE0B2,stroke:#FF9800
+    style Z fill:#F4A9A8,stroke:#D32F2F
+    style R fill:#A1C4FD,stroke:#4A90E2
+    style T fill:#BDECB6,stroke:#3C8039
+```
