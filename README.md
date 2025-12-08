@@ -385,14 +385,14 @@ flowchart TB
     S -- No --> R
     R --> T["Fin SP"]
 
-    style A fill:#BDECB6,stroke:#3C8039
-    style N fill:#FFE0B2,stroke:#FF9800
-    style Z fill:#F4A9A8,stroke:#D32F2F
-    style R fill:#A1C4FD,stroke:#4A90E2
-    style T fill:#BDECB6,stroke:#3C8039
+    style A fill:#BDECB6,stroke:#3C8039,color:#000
+    style N fill:#FFE0B2,stroke:#FF9800,color:#000
+    style Z fill:#F4A9A8,stroke:#D32F2F,color:#fff
+    style R fill:#A1C4FD,stroke:#4A90E2,color:#000
+    style T fill:#BDECB6,stroke:#3C8039,color:#000
 ```
 Descargar PNG:
-<img src="https://img.shields.io/badge/Descargar-Flujo General PNG-blue?style=flat-square" alt="Descargar Diagrama General">
+[Descargar Flujo General PNG](./diagrams/Flujo%20General%20del%20Stored%20Procedure%20UP_MAN_CF_LOTETICKET%20(I,%20U,%20D)%20y%20Validaciones%20de%20Destino.png)
 
 ### Validaciones Específicas del Lote Destino (Categoría 3)
 
@@ -447,4 +447,4 @@ flowchart TD
     style A fill:#FFE0B2,stroke:#FF9800
 ```
 Descargar PNG:
-<img src="https://img.shields.io/badge/Descargar-Categoría 3 PNG-blue?style=flat-square" alt="Descargar Diagrama Categoría 3">
+[Descargar Categoría 3 PNG](./diagrams/Detalle%20del%20Flujo%20de%20Validación%20para%20Categoría%20de%20Movimiento%20Destino%20'3'%20(Lote%20Destino).png)
