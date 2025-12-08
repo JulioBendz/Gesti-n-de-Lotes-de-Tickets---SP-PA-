@@ -329,7 +329,7 @@ flowchart TB
     G2 --> Z["RETURN"]
     G -- No --> H
     H --> I{"CATEGORIA_MOVIM_DESTINO = 2"}
-    I -- Si --> I1@{ label: "COD_LINPRO_DESTINO <> ''" }
+    I -- Si --> I1["COD_LINPRO_DESTINO <> ''"]
     I1 -- Si --> I2{"Existe LINPRO y SECTOR<br>en CF_LINEAS_PRODUCCION"}
     I2 -- No --> I3["RAISERROR<br>LINEA DE PRODUCCION DESTINO NO EXISTE"]
     I3 --> Z
@@ -343,7 +343,7 @@ flowchart TB
     K2 --> Z
     K -- No --> L
     L --> M{"CATEGORIA_MOVIM_DESTINO = 4"}
-    M -- Si --> M1@{ label: "COD_LINPRO_DESTINO <> ''" }
+    M -- Si --> M1["COD_LINPRO_DESTINO <> ''"]
     M1 -- Si --> M2{"Existe LINPRO y SECTOR<br>en CF_LINEAS_PRODUCCION"}
     M2 -- No --> M3["RAISERROR<br>LINEA DE PRODUCCION DESTINO NO EXISTE"]
     M3 --> Z
@@ -351,7 +351,7 @@ flowchart TB
     M1 -- No --> M4
     M -- No --> M4
     M4 --> M5{"CATEGORIA_MOVIM_DESTINO = 7"}
-    M5 -- Si --> M6@{ label: "COD_CENCOST_DESTINO <> ''" }
+    M5 -- Si --> M6["COD_CENCOST_DESTINO <> ''"]
     M6 -- Si --> M7{"Existe CENCOSTO<br>en TG_CENCOSTO"}
     M7 -- No --> M8["RAISERROR<br>CENTRO DE COSTOS DESTINO NO EXISTE"]
     M8 --> Z
@@ -385,9 +385,6 @@ flowchart TB
     S -- No --> R
     R --> T["Fin SP"]
 
-    I1@{ shape: diamond}
-    M1@{ shape: diamond}
-    M6@{ shape: diamond}
     style A fill:#BDECB6,stroke:#3C8039
     style N fill:#FFE0B2,stroke:#FF9800
     style Z fill:#F4A9A8,stroke:#D32F2F
